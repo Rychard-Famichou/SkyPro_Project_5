@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -223,3 +224,7 @@ CELERY_REDIS_BACKEND_TRANSPORT_OPTIONS = {
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'protocol': 2
 }
+
+if 'test' in sys.argv:
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
