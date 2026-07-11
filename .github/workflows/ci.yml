@@ -149,7 +149,7 @@ jobs:
       - name: Deploy to Server via Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            cd SkyPro_Project5_Habits
+            cd SkyPro_Project_5
             export IMAGE_TAG=${{ github.sha }}
             docker compose pull web nginx celery celery-beat
             docker compose up -d --remove-orphans
