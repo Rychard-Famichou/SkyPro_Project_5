@@ -154,9 +154,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/SkyPro_Project_5
+            git pull origin main
             
-            export DOCKER_HUB_USERNAME="${{ secrets.DOCKER_HUB_USERNAME }}"
-            export IMAGE_TAG="latest"
+            echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
+            echo "IMAGE_TAG=latest" >> .env
             
             docker compose pull
-            docker compose up -d
+            docker compose up -d --remove-orphans
