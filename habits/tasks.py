@@ -1,10 +1,12 @@
+from django.utils import timezone
+
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.utils import timezone
 
 from habits.services import send_telegram_notification
 
 logger = get_task_logger(__name__)
+
 
 @shared_task
 def remind_habit():

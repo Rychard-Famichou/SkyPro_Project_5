@@ -1,5 +1,6 @@
-import requests
 from django.conf import settings
+
+import requests
 
 
 def send_telegram_notification(chat_id, text):
@@ -9,10 +10,7 @@ def send_telegram_notification(chat_id, text):
     token = settings.TELEGRAM_BOT_TOKEN
     url = f"https://telegram.org{token}/sendMessage"
 
-    payload = {
-        "chat_id": chat_id,
-        "text": text
-    }
+    payload = {"chat_id": chat_id, "text": text}
 
     try:
         response = requests.post(url, json=payload, timeout=5)

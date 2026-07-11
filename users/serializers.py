@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from users.models import CustomUser
@@ -10,10 +11,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields.pop('username', None)
+        self.fields.pop("username", None)
 
     def validate(self, attrs):
-        attrs[self.username_field] = attrs.get('email')
+        attrs[self.username_field] = attrs.get("email")
         return super().validate(attrs)
 
 
@@ -22,7 +23,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['email', 'username', 'password']
+        fields = ["email", "username", "password"]
 
     def create(self, validated_data):
         # Хеширование пароля
