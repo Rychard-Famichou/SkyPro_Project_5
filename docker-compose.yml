@@ -22,7 +22,7 @@ services:
     command: redis-server --appendonly yes
 
   web:
-    image: ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${IMAGE_TAG:-latest}
+    image: ${DOCKER_HUB_USERNAME}/myapp:${IMAGE_TAG:-latest}
     command: >
       sh -c "python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
@@ -39,7 +39,7 @@ services:
         condition: service_started
 
   nginx:
-    image: ${{ secrets.DOCKER_HUB_USERNAME }}/myapp-nginx:${IMAGE_TAG:-latest}
+    image: ${DOCKER_HUB_USERNAME}/myapp-nginx:${IMAGE_TAG:-latest}
     ports:
       - "80:80"
     volumes:
@@ -49,7 +49,7 @@ services:
       - web
 
   celery:
-    image: ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${IMAGE_TAG:-latest}
+    image: ${DOCKER_HUB_USERNAME}/myapp:${IMAGE_TAG:-latest}
     command: celery -A config worker --loglevel=info
     env_file:
       - .env
@@ -58,7 +58,7 @@ services:
       - redis
 
   celery-beat:
-    image: ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${IMAGE_TAG:-latest}
+    image: ${DOCKER_HUB_USERNAME}/myapp:${IMAGE_TAG:-latest}
     command: celery -A config beat --loglevel=info
     env_file:
       - .env

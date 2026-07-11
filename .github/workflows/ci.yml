@@ -146,12 +146,17 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       # Деплой через Docker Compose на сервере
-      - name: Deploy to Server via Docker Compose
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            cd SkyPro_Project_5
-            export IMAGE_TAG=${{ github.sha }}
-            docker compose pull web nginx celery celery-beat
-            docker compose up -d --remove-orphans
-            docker image prune -f
-          EOF
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/SkyPro_Project_5
+            
+            export DOCKER_HUB_USERNAME="${{ secrets.DOCKER_HUB_USERNAME }}"
+            export IMAGE_TAG="latest"
+            
+            docker compose pull
+            docker compose up -d
