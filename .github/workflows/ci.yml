@@ -152,12 +152,18 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          envs: GITHUB_REF_NAME,DOCKER_HUB_USERNAME
           script: |
             cd ~/SkyPro_Project_5
-            git pull origin main
+            git fetch --all
+            git checkout -B $GITHUB_REF_NAME origin/$GITHUB_REF_NAME
             
-            echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
-            echo "IMAGE_TAG=latest" >> .env
+            export DOCKER_HUB_USERNAME="$DOCKER_HUB_USERNAME"
+            export IMAGE_TAG="latest"
             
-            docker compose pull
+            docker compose pull web nginx celery celery-beat
             docker compose up -d --remove-orphans
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          
