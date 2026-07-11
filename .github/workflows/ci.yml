@@ -167,4 +167,3 @@ jobs:
           GITHUB_REF_NAME: ${{ github.ref_name }}
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           IMAGE_TAG: ${{ github.sha }}
-          
