@@ -1,0 +1,110 @@
+name: Django CI (Lint & Test)
+
+on: [push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        id: cached-poetry-dependencies
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Run Flake8
+        run: poetry run flake8 .
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: habits_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: super_password_123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        id: cached-poetry-dependencies
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Run migrations
+        env:
+          SECRET_KEY: "temporary_secret_key_for_testing_purposes"
+          POSTGRES_DB: "habits_db"
+          POSTGRES_USER: "postgres"
+          POSTGRES_PASSWORD: "super_password_123"
+          DB_HOST: "127.0.0.1"
+          DB_PORT: "5432"
+        run: poetry run python manage.py migrate
+
+      - name: Run tests
+        env:
+          SECRET_KEY: "temporary_secret_key_for_testing_purposes"
+          POSTGRES_DB: "habits_db"
+          POSTGRES_USER: "postgres"
+          POSTGRES_PASSWORD: "super_password_123"
+          DB_HOST: "127.0.0.1"
+          DB_PORT: "5432"
+        run: |
+          poetry run coverage run manage.py test
+          poetry run coverage json -o coverage.json
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: django-coverage-report
+          path: coverage.json
+          retention-days: 7

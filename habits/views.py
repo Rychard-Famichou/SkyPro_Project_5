@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.exceptions import NotAuthenticated
 
@@ -10,14 +9,15 @@ from users.permissions import IsOwner
 
 # Create your views here.
 class HabitBaseView(generics.GenericAPIView):
-    """ Базовый класс для генериков """
+    """Базовый класс для генериков"""
+
     serializer_class = HabitSerializer
     permission_classes = [IsOwner]
     queryset = Habit.objects.all()
 
 
 class HabitCreateView(HabitBaseView, generics.CreateAPIView):
-    """ Создать привычку """
+    """Создать привычку"""
 
     def perform_create(self, serializer):
         if self.request.user.is_anonymous:
@@ -26,7 +26,8 @@ class HabitCreateView(HabitBaseView, generics.CreateAPIView):
 
 
 class HabitListView(HabitBaseView, generics.ListAPIView):
-    """ Лист моих привычек """
+    """Лист моих привычек"""
+
     pagination_class = HabitPaginator
 
     def get_queryset(self):
@@ -35,22 +36,25 @@ class HabitListView(HabitBaseView, generics.ListAPIView):
 
 
 class HabitPublicListView(HabitBaseView, generics.ListAPIView):
-    """ Лист публичных привычек """
+    """Лист публичных привычек"""
 
     def get_queryset(self):
         return Habit.objects.filter(public=True)
 
 
 class HabitDetailView(HabitBaseView, generics.RetrieveAPIView):
-    """ Детали моей привычки """
+    """Детали моей привычки"""
+
     pass
 
 
 class HabitUpdateView(HabitBaseView, generics.UpdateAPIView):
-    """ Изменить мою привычку """
+    """Изменить мою привычку"""
+
     pass
 
 
 class HabitDeleteView(HabitBaseView, generics.DestroyAPIView):
-    """ Удалить мою привычку """
+    """Удалить мою привычку"""
+
     pass
