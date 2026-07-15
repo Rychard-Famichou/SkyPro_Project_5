@@ -1,4 +1,4 @@
-name: Django CI
+name: Django CI (Lint & Test)
 
 on: [push]
 
@@ -108,62 +108,3 @@ jobs:
           name: django-coverage-report
           path: coverage.json
           retention-days: 7
-
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Log in to Docker Hub
-        run: echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-
-      # Собираем и пушим основной образ приложения (для web, celery, celery-beat)
-      - name: Build main application image
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }} .
-
-      - name: Push main application image
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
-
-      # Собираем и пушим образ Nginx
-      - name: Build Nginx image
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/myapp-nginx:${{ github.sha }} ./nginx
-
-      - name: Push Nginx image
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/myapp-nginx:${{ github.sha }}
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
-
-      # Деплой через Docker Compose на сервере
-      - name: Deploy to Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          envs: GITHUB_REF_NAME,DOCKER_HUB_USERNAME,IMAGE_TAG
-          script: |
-            cd ~/SkyPro_Project_5
-            git fetch --all
-            git checkout -B $GITHUB_REF_NAME origin/$GITHUB_REF_NAME
-            
-            export DOCKER_HUB_USERNAME="$DOCKER_HUB_USERNAME"
-            export IMAGE_TAG="$IMAGE_TAG"
-            
-            docker compose pull web nginx celery celery-beat
-            docker compose up -d --remove-orphans
-        env:
-          GITHUB_REF_NAME: ${{ github.ref_name }}
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          IMAGE_TAG: ${{ github.sha }}
